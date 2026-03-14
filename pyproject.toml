@@ -1,0 +1,11 @@
+[project]
+name = "dropbox2garmin"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "garminconnect",
+  "watchdog",
+]
+
+[project.scripts]
+dropbox2garmin = "dropbox2garmin:main"
