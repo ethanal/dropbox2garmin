@@ -46,6 +46,12 @@
               type = lib.types.path;
               description = "Path to .env file with Garmin credentials";
             };
+
+            environment = lib.mkOption {
+              type = lib.types.attrsOf lib.types.str;
+              default = {};
+              description = "Extra environment variables for the dropbox2garmin service";
+            };
           };
 
           config = lib.mkIf cfg.enable {
@@ -59,6 +65,7 @@
                 Restart = "on-failure";
                 RestartSec = 30;
                 EnvironmentFile = cfg.environmentFile;
+                Environment = lib.mapAttrsToList (k: v: "${k}=${v}") cfg.environment;
               };
               Install = {
                 WantedBy = [ "default.target" ];
