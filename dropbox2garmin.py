@@ -1,4 +1,3 @@
-import glob
 import logging
 import os
 import signal
@@ -96,7 +95,7 @@ def upload_file(path: Path, uploader: GarminUploader, state: UploadState):
 
 
 def scan_existing(watch_dir: Path, uploader: GarminUploader, state: UploadState):
-    fit_files = sorted(watch_dir.glob("*.fit")) + sorted(watch_dir.glob("*.FIT"))
+    fit_files = sorted(watch_dir.glob("*.fit"))
     for path in fit_files:
         upload_file(path, uploader, state)
 
@@ -110,8 +109,11 @@ def main():
     watch_dir = Path(
         os.environ.get("DROPBOX_WATCH_DIR", "~/Dropbox/Apps/WahooFitness")
     ).expanduser()
-    email = os.environ.get("GARMIN_EMAIL", "")
-    password = os.environ.get("GARMIN_PASSWORD", "")
+    email = os.environ.get("GARMIN_EMAIL")
+    password = os.environ.get("GARMIN_PASSWORD")
+    if not email or not password:
+        log.error("GARMIN_EMAIL and GARMIN_PASSWORD environment variables are required")
+        sys.exit(1)
     token_dir = os.environ.get(
         "GARMIN_TOKEN_DIR", str(Path.home() / ".garminconnect")
     )
