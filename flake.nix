@@ -1,5 +1,5 @@
 {
-  description = "Sync Dropbox fitness files to Garmin Connect";
+  description = "Sync Dropbox .fit files to Garmin Connect";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
@@ -57,7 +57,7 @@
           config = lib.mkIf cfg.enable {
             systemd.user.services.dropbox2garmin = {
               Unit = {
-                Description = "Sync Dropbox fitness files to Garmin Connect";
+                Description = "dropbox2garmin";
                 After = [ "network-online.target" ];
               };
               Service = {

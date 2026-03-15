@@ -1,6 +1,5 @@
 import logging
 import os
-import signal
 import sys
 import time
 from pathlib import Path
@@ -42,7 +41,12 @@ class GarminUploader:
 
     def connect(self):
         self.client = Garmin(self.email, self.password)
-        self.client.login(tokenstore=self.token_dir)
+        try:
+            self.client.login(tokenstore=self.token_dir)
+        except FileNotFoundError:
+            log.info("No saved tokens found, doing fresh login")
+            self.client.login()
+            self.client.garth.dump(self.token_dir)
         log.info("Connected to Garmin Connect")
 
     def upload(self, path: Path) -> bool:
@@ -114,9 +118,7 @@ def main():
     if not email or not password:
         log.error("GARMIN_EMAIL and GARMIN_PASSWORD environment variables are required")
         sys.exit(1)
-    token_dir = os.environ.get(
-        "GARMIN_TOKEN_DIR", str(Path.home() / ".garminconnect")
-    )
+    token_dir = os.environ.get("GARMIN_TOKEN_DIR", str(Path.home() / ".garminconnect"))
     state_file = Path(
         os.environ.get(
             "DROPBOX_STATE_FILE",
@@ -143,18 +145,15 @@ def main():
     observer.start()
     log.info("Watching %s for new .fit files", watch_dir)
 
-    stop = False
-
-    def handle_signal(signum, frame):
-        nonlocal stop
-        stop = True
-
-    signal.signal(signal.SIGINT, handle_signal)
-    signal.signal(signal.SIGTERM, handle_signal)
-
-    while not stop:
-        time.sleep(60)
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        observer.stop()
 
     log.info("Shutting down")
-    observer.stop()
     observer.join()
+
+
+if __name__ == "__main__":
+    main()
